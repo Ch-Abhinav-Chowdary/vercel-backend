@@ -40,10 +40,33 @@ const io = new Server(httpServer, {
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://vercel-frontend-roan-pi.vercel.app/',
-  credentials: true
-}));
+
+// CORS configuration to support local dev and deployed frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'https://vercel-frontend-roan-pi.vercel.app',
+];
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
