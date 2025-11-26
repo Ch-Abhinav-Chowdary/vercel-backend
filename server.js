@@ -104,9 +104,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server only when not running on Vercel (e.g., local development)
+if (!process.env.VERCEL) {
+  httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
+// Export the Express app for Vercel serverless function handler
+export default app;
 export { io };
